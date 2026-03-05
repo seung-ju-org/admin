@@ -1,0 +1,122 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/your-org/admin
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3001
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-route53"
+  hosts:
+    - host: admin.seung-ju.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - admin.seung-ju.com
+      secretName: admin-seungju-tls
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Non-sensitive environment variables
+env:
+  NEXTAUTH_URL: "https://admin.seung-ju.com"
+  ACCESS_TOKEN_TTL_SECONDS: "900"
+  REFRESH_TOKEN_TTL_SECONDS: "604800"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  KAFKA_SASL_MECHANISM: "plain"
+  KAFKA_SECURITY_PROTOCOL: "plaintext"
+  MAIL_SYNC_SSH_PORT: "22"
+  MAIL_SYNC_SSH_TIMEOUT_MS: "10000"
+  MAIL_SYNC_REQUIRED: "false"
+  PROMETHEUS_TIMEOUT_MS: "4000"
+
+# Secret environment variables to create as Kubernetes Secret data.
+# Replace with real values before production or use existingSecret.
+secretEnv:
+  DATABASE_URL: ""
+  NEXTAUTH_SECRET: ""
+  REDIS_HOST: ""
+  REDIS_PASSWORD: ""
+  REDIS_URL: ""
+  KAFKA_BROKERS: ""
+  KAFKA_USERNAME: ""
+  KAFKA_PASSWORD: ""
+  MAIL_SYNC_SSH_HOST: ""
+  MAIL_SYNC_SSH_USER: ""
+  MAIL_SYNC_SSH_PASSWORD: ""
+  MAIL_SYNC_SSH_KEY: ""
+  MAIL_SYNC_EMAIL_DOMAIN: ""
+  MAIL_SYNC_SSH_COMMAND: ""
+  MAIL_SYNC_SSH_COMMAND_CREATE: ""
+  MAIL_SYNC_SSH_COMMAND_UPDATE: ""
+  MAIL_SYNC_SSH_COMMAND_DELETE: ""
+  PROMETHEUS_BASE_URL: ""
+  PROMETHEUS_AUTH_TOKEN: ""
+  GRAFANA_DASHBOARD_URL: ""
+
+# Use pre-created secret instead of chart-managed secret.
+existingSecret: ""
+
+extraEnv: []
+extraEnvFrom: []
+
+probes:
+  liveness:
+    enabled: true
+    path: /
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  readiness:
+    enabled: true
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
