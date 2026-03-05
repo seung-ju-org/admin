@@ -10,7 +10,7 @@ spec:
   containers:
     - name: node
       image: node:20-alpine
-      command: ["cat"]
+      command: ["sh", "-c", "cat"]
       tty: true
       resources:
         requests:
@@ -19,16 +19,7 @@ spec:
         limits:
           cpu: "2"
           memory: "2Gi"
-    - name: docker
-      image: docker:27-cli
-      command: ["cat"]
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:v1.23.2-debug
+      command: ["/busybox/sh", "-c", "cat"]
       tty: true
-      env:
-        - name: DOCKER_CONFIG
-          value: /home/jenkins/.docker
-      volumeMounts:
-        - name: docker-config
-          mountPath: /home/jenkins/.docker
-  volumes:
-    - name: docker-config
-      emptyDir: {}
