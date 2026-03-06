@@ -9,14 +9,12 @@ import { isMailSyncRequired, syncMailUser } from "@/lib/mail-sync";
 import { prisma } from "@/lib/prisma";
 import { getRedisClient } from "@/lib/redis";
 
-type SessionContext =
-  | {
-      user: {
-        id: string;
-        role: "ADMIN" | "USER";
-      };
-    }
-  | null;
+type SessionContext = {
+  user: {
+    id: string;
+    role: "ADMIN" | "USER";
+  };
+} | null;
 
 type ProjectLocale = "EN" | "KO" | "JA";
 type CareerSortField =
@@ -153,7 +151,7 @@ function buildQueryCacheKey(
   session: CacheableSession | null,
   args: Record<string, unknown>,
 ) {
-  const scope = session?.user.role === "ADMIN" ? "admin" : session?.user.id ?? "anonymous";
+  const scope = session?.user.role === "ADMIN" ? "admin" : (session?.user.id ?? "anonymous");
   return `${GRAPHQL_CACHE_PREFIX}:query:${namespace}:${scope}:${stableStringify(args)}`;
 }
 
@@ -409,8 +407,21 @@ const typeDefs = /* GraphQL */ `
   }
 
   type Mutation {
-    createUser(username: String!, email: String, name: String, password: String!, role: Role!): User!
-    updateUser(userId: ID!, username: String, email: String, name: String, password: String, role: Role): User!
+    createUser(
+      username: String!
+      email: String
+      name: String
+      password: String!
+      role: Role!
+    ): User!
+    updateUser(
+      userId: ID!
+      username: String
+      email: String
+      name: String
+      password: String
+      role: Role
+    ): User!
     updateUserRole(userId: ID!, role: Role!): User!
     deleteUser(userId: ID!): Boolean!
 
@@ -565,20 +576,15 @@ const resolvers = {
 
     user: async (_: unknown, args: { userId: string }, context: { session: SessionContext }) => {
       assertAdmin(context.session);
-      return getCachedQueryResult(
-        "user",
-        context.session,
-        { userId: args.userId },
-        async () => {
-          const user = await prisma.user.findFirst({ where: { id: args.userId, deletedAt: null } });
-          if (!user) return null;
-          return {
-            ...user,
-            createdAt: user.createdAt.toISOString(),
-            updatedAt: user.updatedAt.toISOString(),
-          };
-        },
-      );
+      return getCachedQueryResult("user", context.session, { userId: args.userId }, async () => {
+        const user = await prisma.user.findFirst({ where: { id: args.userId, deletedAt: null } });
+        if (!user) return null;
+        return {
+          ...user,
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
+        };
+      });
     },
 
     project: async (
@@ -614,7 +620,9 @@ const resolvers = {
           if (!project) return null;
 
           const translation =
-            project.translations.find((t) => t.locale === locale) ?? project.translations[0] ?? null;
+            project.translations.find((t) => t.locale === locale) ??
+            project.translations[0] ??
+            null;
 
           return {
             id: project.id,
@@ -622,7 +630,9 @@ const resolvers = {
             title: translation?.title ?? null,
             company: translation?.company ?? null,
             role: translation?.role ?? null,
-            achievements: translation?.achievements ? JSON.stringify(translation.achievements) : "[]",
+            achievements: translation?.achievements
+              ? JSON.stringify(translation.achievements)
+              : "[]",
             technologies: project.technologies.map((t) => t.technology.name),
             displayOrder: project.displayOrder,
             startDate: project.startDate.toISOString(),
@@ -645,7 +655,13 @@ const resolvers = {
         locale?: ProjectLocale;
         page?: number;
         pageSize?: number;
-        sortBy?: "CREATED_AT" | "SLUG" | "DISPLAY_ORDER" | "START_DATE" | "END_DATE" | "IS_PUBLISHED";
+        sortBy?:
+          | "CREATED_AT"
+          | "SLUG"
+          | "DISPLAY_ORDER"
+          | "START_DATE"
+          | "END_DATE"
+          | "IS_PUBLISHED";
         sortOrder?: "ASC" | "DESC";
       },
       context: { session: SessionContext },
@@ -721,7 +737,9 @@ const resolvers = {
             totalCount,
             items: projects.map((project) => {
               const translation =
-                project.translations.find((t) => t.locale === locale) ?? project.translations[0] ?? null;
+                project.translations.find((t) => t.locale === locale) ??
+                project.translations[0] ??
+                null;
 
               return {
                 id: project.id,
@@ -729,7 +747,9 @@ const resolvers = {
                 title: translation?.title ?? null,
                 company: translation?.company ?? null,
                 role: translation?.role ?? null,
-                achievements: translation?.achievements ? JSON.stringify(translation.achievements) : "[]",
+                achievements: translation?.achievements
+                  ? JSON.stringify(translation.achievements)
+                  : "[]",
                 technologies: project.technologies.map((t) => t.technology.name),
                 displayOrder: project.displayOrder,
                 startDate: project.startDate.toISOString(),
@@ -758,8 +778,9 @@ const resolvers = {
         context.session,
         { careerId: args.careerId, locale },
         async () => {
-          const careerDelegate = (prisma as unknown as { portfolioCareer?: typeof prisma.portfolioCareer })
-            .portfolioCareer;
+          const careerDelegate = (
+            prisma as unknown as { portfolioCareer?: typeof prisma.portfolioCareer }
+          ).portfolioCareer;
 
           const career = careerDelegate
             ? await careerDelegate.findFirst({
@@ -820,57 +841,59 @@ const resolvers = {
             return { totalCount: 0, items: [] };
           }
 
-          const careerDelegate = (prisma as unknown as {
-            portfolioCareer?: typeof prisma.portfolioCareer;
-          }).portfolioCareer;
+          const careerDelegate = (
+            prisma as unknown as {
+              portfolioCareer?: typeof prisma.portfolioCareer;
+            }
+          ).portfolioCareer;
           if (!careerDelegate) {
-        const conditions: Prisma.Sql[] = [Prisma.sql`(to_jsonb(c)->>'deletedAt') IS NULL`];
+            const conditions: Prisma.Sql[] = [Prisma.sql`(to_jsonb(c)->>'deletedAt') IS NULL`];
 
-        if (args.company?.trim()) {
-          conditions.push(
-            Prisma.sql`COALESCE(to_jsonb(tl)->>'company', tf."company", '') ILIKE ${`%${args.company.trim()}%`}`,
-          );
-        }
-        if (args.position?.trim()) {
-          conditions.push(
-            Prisma.sql`COALESCE(to_jsonb(tl)->>'position', tf."position", '') ILIKE ${`%${args.position.trim()}%`}`,
-          );
-        }
-        if (typeof args.isCurrent === "boolean") {
-          conditions.push(
-            Prisma.sql`COALESCE(
+            if (args.company?.trim()) {
+              conditions.push(
+                Prisma.sql`COALESCE(to_jsonb(tl)->>'company', tf."company", '') ILIKE ${`%${args.company.trim()}%`}`,
+              );
+            }
+            if (args.position?.trim()) {
+              conditions.push(
+                Prisma.sql`COALESCE(to_jsonb(tl)->>'position', tf."position", '') ILIKE ${`%${args.position.trim()}%`}`,
+              );
+            }
+            if (typeof args.isCurrent === "boolean") {
+              conditions.push(
+                Prisma.sql`COALESCE(
               NULLIF(to_jsonb(c)->>'isCurrent', '')::boolean,
               NULLIF(to_jsonb(c)->>'isOngoing', '')::boolean,
               false
             ) = ${args.isCurrent}`,
-          );
-        }
-        if (typeof args.isPublished === "boolean") {
-          conditions.push(
-            Prisma.sql`COALESCE(
+              );
+            }
+            if (typeof args.isPublished === "boolean") {
+              conditions.push(
+                Prisma.sql`COALESCE(
               NULLIF(to_jsonb(c)->>'isPublished', '')::boolean,
               true
             ) = ${args.isPublished}`,
-          );
-        }
+              );
+            }
 
-        const whereSql = Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
-        const rows = await prisma.$queryRaw<
-          Array<{
-            id: string;
-            startDate: Date;
-            endDate: Date | null;
-            isCurrent: boolean;
-            isPublished: boolean;
-            displayOrder: number;
-            createdAt: Date;
-            updatedAt: Date;
-            company: string;
-            position: string;
-            description: string | null;
-          }>
-        >(
-          Prisma.sql`
+            const whereSql = Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
+            const rows = await prisma.$queryRaw<
+              Array<{
+                id: string;
+                startDate: Date;
+                endDate: Date | null;
+                isCurrent: boolean;
+                isPublished: boolean;
+                displayOrder: number;
+                createdAt: Date;
+                updatedAt: Date;
+                company: string;
+                position: string;
+                description: string | null;
+              }>
+            >(
+              Prisma.sql`
             SELECT
               c."id",
               c."startDate",
@@ -901,8 +924,8 @@ const resolvers = {
                 to_jsonb(tl)->>'description',
                 tf."description"
               ) AS "description"
-            FROM "portfolio"."Career" c
-            LEFT JOIN "portfolio"."CareerTranslation" tl
+            FROM "Career" c
+            LEFT JOIN "CareerTranslation" tl
               ON tl."careerId" = c."id"
              AND tl."locale"::text = ${locale}
             LEFT JOIN LATERAL (
@@ -910,63 +933,63 @@ const resolvers = {
                 COALESCE(to_jsonb(t)->>'company', '') AS "company",
                 COALESCE(to_jsonb(t)->>'position', '') AS "position",
                 to_jsonb(t)->>'description' AS "description"
-              FROM "portfolio"."CareerTranslation" t
+              FROM "CareerTranslation" t
               WHERE t."careerId" = c."id"
               ORDER BY t."id" ASC
               LIMIT 1
             ) tf ON TRUE
             ${whereSql}
           `,
-        );
+            );
 
-        const sorted = rows
-          .map((row) => ({
-            id: row.id,
-            company: row.company,
-            position: row.position,
-            description: row.description,
-            startDate: row.startDate.toISOString(),
-            endDate: row.endDate?.toISOString() ?? null,
-            isCurrent: row.isCurrent,
-            isPublished: row.isPublished,
-            displayOrder: row.displayOrder,
-            createdAt: row.createdAt.toISOString(),
-            updatedAt: row.updatedAt.toISOString(),
-          }))
-          .sort((a, b) => {
-            const strCompare = (left: string, right: string) => left.localeCompare(right);
-            const numCompare = (left: number, right: number) => left - right;
-            const boolCompare = (left: boolean, right: boolean) => Number(left) - Number(right);
-            const dateCompare = (left: string, right: string) =>
-              new Date(left).getTime() - new Date(right).getTime();
+            const sorted = rows
+              .map((row) => ({
+                id: row.id,
+                company: row.company,
+                position: row.position,
+                description: row.description,
+                startDate: row.startDate.toISOString(),
+                endDate: row.endDate?.toISOString() ?? null,
+                isCurrent: row.isCurrent,
+                isPublished: row.isPublished,
+                displayOrder: row.displayOrder,
+                createdAt: row.createdAt.toISOString(),
+                updatedAt: row.updatedAt.toISOString(),
+              }))
+              .sort((a, b) => {
+                const strCompare = (left: string, right: string) => left.localeCompare(right);
+                const numCompare = (left: number, right: number) => left - right;
+                const boolCompare = (left: boolean, right: boolean) => Number(left) - Number(right);
+                const dateCompare = (left: string, right: string) =>
+                  new Date(left).getTime() - new Date(right).getTime();
 
-            const base =
-              sortBy === "COMPANY"
-                ? strCompare(a.company, b.company)
-                : sortBy === "POSITION"
-                  ? strCompare(a.position, b.position)
-                  : sortBy === "DISPLAY_ORDER"
-                    ? numCompare(a.displayOrder, b.displayOrder)
-                    : sortBy === "START_DATE"
-                      ? dateCompare(a.startDate, b.startDate)
-                      : sortBy === "END_DATE"
-                        ? dateCompare(a.endDate ?? "", b.endDate ?? "")
-                        : sortBy === "IS_CURRENT"
-                          ? boolCompare(a.isCurrent, b.isCurrent)
-                          : sortBy === "IS_PUBLISHED"
-                            ? boolCompare(a.isPublished, b.isPublished)
-                            : dateCompare(a.createdAt, b.createdAt);
+                const base =
+                  sortBy === "COMPANY"
+                    ? strCompare(a.company, b.company)
+                    : sortBy === "POSITION"
+                      ? strCompare(a.position, b.position)
+                      : sortBy === "DISPLAY_ORDER"
+                        ? numCompare(a.displayOrder, b.displayOrder)
+                        : sortBy === "START_DATE"
+                          ? dateCompare(a.startDate, b.startDate)
+                          : sortBy === "END_DATE"
+                            ? dateCompare(a.endDate ?? "", b.endDate ?? "")
+                            : sortBy === "IS_CURRENT"
+                              ? boolCompare(a.isCurrent, b.isCurrent)
+                              : sortBy === "IS_PUBLISHED"
+                                ? boolCompare(a.isPublished, b.isPublished)
+                                : dateCompare(a.createdAt, b.createdAt);
 
-            if (base !== 0) return direction === "asc" ? base : -base;
-            return dateCompare(b.createdAt, a.createdAt);
-          });
+                if (base !== 0) return direction === "asc" ? base : -base;
+                return dateCompare(b.createdAt, a.createdAt);
+              });
 
-        const start = (page - 1) * pageSize;
-        return {
-          totalCount: sorted.length,
-          items: sorted.slice(start, start + pageSize),
-        };
-      }
+            const start = (page - 1) * pageSize;
+            return {
+              totalCount: sorted.length,
+              items: sorted.slice(start, start + pageSize),
+            };
+          }
           const where: Prisma.PortfolioCareerWhereInput = {
             AND: [
               args.company?.trim()
@@ -1043,7 +1066,9 @@ const resolvers = {
             });
 
             const start = (page - 1) * pageSize;
-            const items = sorted.slice(start, start + pageSize).map((row) => mapCareerRecord(row, locale));
+            const items = sorted
+              .slice(start, start + pageSize)
+              .map((row) => mapCareerRecord(row, locale));
 
             return {
               totalCount,
@@ -1219,7 +1244,10 @@ const resolvers = {
       });
       if (!existingUser) throw new Error("USER_NOT_FOUND");
 
-      const user = await prisma.user.update({ where: { id: args.userId }, data: { role: args.role } });
+      const user = await prisma.user.update({
+        where: { id: args.userId },
+        data: { role: args.role },
+      });
 
       await syncMailUser({
         action: "UPDATE",
@@ -1242,7 +1270,11 @@ const resolvers = {
       };
     },
 
-    deleteUser: async (_: unknown, args: { userId: string }, context: { session: SessionContext }) => {
+    deleteUser: async (
+      _: unknown,
+      args: { userId: string },
+      context: { session: SessionContext },
+    ) => {
       assertAdmin(context.session);
       if (context.session?.user.id === args.userId) {
         throw new Error("You cannot delete your own account.");
@@ -1411,7 +1443,8 @@ const resolvers = {
 
       if (typeof args.slug === "string") data.slug = args.slug.trim();
       if (typeof args.displayOrder === "number") data.displayOrder = args.displayOrder;
-      if (typeof args.startDate === "string") data.startDate = parseDateOrThrow(args.startDate, "startDate");
+      if (typeof args.startDate === "string")
+        data.startDate = parseDateOrThrow(args.startDate, "startDate");
       if (typeof args.endDate === "string") {
         data.endDate = args.endDate.trim() ? parseDateOrThrow(args.endDate, "endDate") : null;
       }
@@ -1460,7 +1493,9 @@ const resolvers = {
       }
 
       if (args.technologyNames) {
-        await prisma.portfolioProjectTechnology.deleteMany({ where: { projectId: args.projectId } });
+        await prisma.portfolioProjectTechnology.deleteMany({
+          where: { projectId: args.projectId },
+        });
 
         const technologyNames = args.technologyNames
           .map((name) => name.trim())
@@ -1506,7 +1541,11 @@ const resolvers = {
       };
     },
 
-    deleteProject: async (_: unknown, args: { projectId: string }, context: { session: SessionContext }) => {
+    deleteProject: async (
+      _: unknown,
+      args: { projectId: string },
+      context: { session: SessionContext },
+    ) => {
       assertAdmin(context.session);
       const project = await prisma.portfolioProject.findFirst({
         where: { id: args.projectId },
@@ -1543,7 +1582,8 @@ const resolvers = {
       assertAdmin(context.session);
       const careerId = createId();
       const koTranslation =
-        args.translations.find((translation) => translation.locale === "KO") ?? args.translations[0];
+        args.translations.find((translation) => translation.locale === "KO") ??
+        args.translations[0];
       const baseCompany = koTranslation?.company?.trim() || "career";
       const basePosition = koTranslation?.position?.trim() || "position";
       const baseOverview = koTranslation?.description?.trim() || null;
