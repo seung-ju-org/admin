@@ -79,7 +79,7 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-# Non-sensitive environment variables
+# Environment variables injected directly from values.yaml
 env:
   NEXTAUTH_URL: "https://admin.seung-ju.com"
   ACCESS_TOKEN_TTL_SECONDS: "900"
@@ -93,8 +93,8 @@ env:
   MAIL_SYNC_REQUIRED: "false"
   PROMETHEUS_TIMEOUT_MS: "4000"
 
-# Secret environment variables to create as Kubernetes Secret data.
-# Replace with real values before production or use existingSecret.
+# Additional environment variables injected directly from values.yaml.
+# Kept as a separate block for compatibility with existing configs.
 secretEnv:
   DATABASE_URL: ""
   NEXTAUTH_SECRET: ""
@@ -116,9 +116,6 @@ secretEnv:
   PROMETHEUS_BASE_URL: ""
   PROMETHEUS_AUTH_TOKEN: ""
   GRAFANA_DASHBOARD_URL: ""
-
-# Use pre-created secret instead of chart-managed secret.
-existingSecret: ""
 
 extraEnv: []
 extraEnvFrom: []
