@@ -18,10 +18,10 @@ describe("prisma singleton", () => {
       PrismaClient: prismaCtor,
     }));
 
-    const module = await import("@/lib/prisma");
+    const prismaModule = await import("@/lib/prisma");
 
     expect(prismaCtor).toHaveBeenCalledWith({ log: ["warn", "error"] });
-    expect((globalThis as { prisma?: unknown }).prisma).toBe(module.prisma);
+    expect((globalThis as { prisma?: unknown }).prisma).toBe(prismaModule.prisma);
   });
 
   it("uses production log level and does not overwrite global prisma", async () => {
@@ -34,10 +34,10 @@ describe("prisma singleton", () => {
       PrismaClient: prismaCtor,
     }));
 
-    const module = await import("@/lib/prisma");
+    const prismaModule = await import("@/lib/prisma");
 
     expect(prismaCtor).toHaveBeenCalledWith({ log: ["error"] });
     expect((globalThis as { prisma?: unknown }).prisma).toBeUndefined();
-    expect(module.prisma).toBeDefined();
+    expect(prismaModule.prisma).toBeDefined();
   });
 });

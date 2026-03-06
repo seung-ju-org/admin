@@ -16,10 +16,16 @@ vi.mock("ssh2", () => {
       return this;
     }
 
-    exec(command: string, callback: (error: Error | null, stream: {
-      on: (event: string, handler: (arg?: unknown) => void) => unknown;
-      stderr: { on: (event: string, handler: (arg?: unknown) => void) => unknown };
-    }) => void) {
+    exec(
+      command: string,
+      callback: (
+        error: Error | null,
+        stream: {
+          on: (event: string, handler: (arg?: unknown) => void) => unknown;
+          stderr: { on: (event: string, handler: (arg?: unknown) => void) => unknown };
+        },
+      ) => void,
+    ) {
       sshState.command = command;
 
       const streamHandlers: Record<string, (arg?: unknown) => void> = {};
@@ -71,9 +77,9 @@ describe("mail-sync", () => {
   it("returns required flag from environment", async () => {
     vi.stubEnv("MAIL_SYNC_REQUIRED", "true");
 
-    const module = await import("@/lib/mail-sync");
+    const mailSyncModule = await import("@/lib/mail-sync");
 
-    expect(module.isMailSyncRequired()).toBe(true);
+    expect(mailSyncModule.isMailSyncRequired()).toBe(true);
   });
 
   it("syncs CREATE action with email mailbox", async () => {
@@ -82,9 +88,9 @@ describe("mail-sync", () => {
     vi.stubEnv("MAIL_SYNC_SSH_PASSWORD", "pw");
     vi.stubEnv("MAIL_SYNC_SSH_COMMAND_CREATE", "echo add {{mailbox}} {{password}}");
 
-    const module = await import("@/lib/mail-sync");
+    const mailSyncModule = await import("@/lib/mail-sync");
 
-    await module.syncMailUser({
+    await mailSyncModule.syncMailUser({
       action: "CREATE",
       user: {
         id: "u1",
@@ -104,9 +110,9 @@ describe("mail-sync", () => {
     vi.stubEnv("MAIL_SYNC_SSH_USER", "root");
     vi.stubEnv("MAIL_SYNC_SSH_COMMAND_UPDATE", "echo update {{mailbox}} {{password}}");
 
-    const module = await import("@/lib/mail-sync");
+    const mailSyncModule = await import("@/lib/mail-sync");
 
-    await module.syncMailUser({
+    await mailSyncModule.syncMailUser({
       action: "UPDATE",
       user: {
         id: "u1",
@@ -124,9 +130,9 @@ describe("mail-sync", () => {
     vi.stubEnv("MAIL_SYNC_EMAIL_DOMAIN", "example.com");
     vi.stubEnv("MAIL_SYNC_SSH_COMMAND_DELETE", "echo del {{mailbox}}");
 
-    const module = await import("@/lib/mail-sync");
+    const mailSyncModule = await import("@/lib/mail-sync");
 
-    await module.syncMailUser({
+    await mailSyncModule.syncMailUser({
       action: "DELETE",
       user: {
         id: "u1",
@@ -140,9 +146,9 @@ describe("mail-sync", () => {
   it("no-ops when ssh host or user is missing", async () => {
     vi.stubEnv("MAIL_SYNC_SSH_COMMAND_CREATE", "echo add {{mailbox}}");
 
-    const module = await import("@/lib/mail-sync");
+    const mailSyncModule = await import("@/lib/mail-sync");
 
-    await module.syncMailUser({
+    await mailSyncModule.syncMailUser({
       action: "CREATE",
       user: {
         id: "u1",
