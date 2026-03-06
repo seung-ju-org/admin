@@ -62,7 +62,7 @@ export default async function EditCareerPage({ params }: { params: Promise<{ id:
           false
         ) AS "isOngoing",
         c."displayOrder"
-      FROM "portfolio"."Career" c
+      FROM "Career" c
       WHERE c."id" = ${id}::uuid
       LIMIT 1
     `,
@@ -84,7 +84,7 @@ export default async function EditCareerPage({ params }: { params: Promise<{ id:
           t."company",
           t."position",
           COALESCE(to_jsonb(t)->>'overview', to_jsonb(t)->>'description') AS "overview"
-        FROM "portfolio"."CareerTranslation" t
+        FROM "CareerTranslation" t
         WHERE t."careerId" = ${id}::uuid
         ORDER BY t."id" ASC
       `,
