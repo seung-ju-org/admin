@@ -5,7 +5,7 @@ import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 
 import { Button } from "@/components/ui/button";
-import { getLocale, getMessages } from "@/lib/i18n";
+import { getLocale, getMessages, type Locale } from "@/lib/i18n";
 
 export default function AdminError({
   error,
@@ -14,7 +14,7 @@ export default function AdminError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const locale = useSyncExternalStore(
+  const locale = useSyncExternalStore<Locale>(
     () => () => undefined,
     () => getLocale(document.documentElement.lang),
     () => "ko",
