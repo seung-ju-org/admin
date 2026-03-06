@@ -1,10 +1,8 @@
 import { getServerSession } from "next-auth";
+import * as Sentry from "@sentry/nextjs";
 
 import { authOptions } from "@/lib/auth";
-import {
-  buildNotifications,
-  buildNotificationsFingerprint,
-} from "@/lib/admin-notifications";
+import { buildNotifications, buildNotificationsFingerprint } from "@/lib/admin-notifications";
 import { getMonitoringSnapshot } from "@/lib/monitoring";
 
 const encoder = new TextEncoder();
@@ -37,19 +35,52 @@ export async function GET() {
   let intervalId: ReturnType<typeof setInterval> | null = null;
   let heartbeatId: ReturnType<typeof setInterval> | null = null;
   let previousFingerprint: string | null = null;
+  let isClosed = false;
+
+  const clearTimers = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+    if (heartbeatId) {
+      clearInterval(heartbeatId);
+      heartbeatId = null;
+    }
+  };
+
+  const isClosedControllerError = (error: unknown) =>
+    error instanceof TypeError &&
+    (error as { code?: string }).code === "ERR_INVALID_STATE" &&
+    error.message.includes("Controller is already closed");
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      const safeEnqueue = (chunk: Uint8Array) => {
+        if (isClosed) return false;
+
+        try {
+          controller.enqueue(chunk);
+          return true;
+        } catch (error) {
+          isClosed = true;
+          clearTimers();
+
+          if (!isClosedControllerError(error)) {
+            Sentry.captureException(error);
+          }
+          return false;
+        }
+      };
+
       const sendLatest = async () => {
         try {
           const payload = await makePayload();
           const hasNew =
-            previousFingerprint !== null &&
-            payload.fingerprint !== previousFingerprint;
+            previousFingerprint !== null && payload.fingerprint !== previousFingerprint;
 
           previousFingerprint = payload.fingerprint;
 
-          controller.enqueue(
+          safeEnqueue(
             encodeDataEvent(
               JSON.stringify({
                 hasNew,
@@ -57,7 +88,10 @@ export async function GET() {
               }),
             ),
           );
-        } catch {
+        } catch (error) {
+          if (!isClosed) {
+            Sentry.captureException(error);
+          }
           // Keep stream alive on transient monitoring errors.
         }
       };
@@ -69,18 +103,12 @@ export async function GET() {
       }, 5000);
 
       heartbeatId = setInterval(() => {
-        controller.enqueue(encoder.encode(": heartbeat\\n\\n"));
+        safeEnqueue(encoder.encode(": heartbeat\\n\\n"));
       }, 15000);
     },
     cancel() {
-      if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-      if (heartbeatId) {
-        clearInterval(heartbeatId);
-        heartbeatId = null;
-      }
+      isClosed = true;
+      clearTimers();
     },
   });
 
