@@ -15,7 +15,8 @@ vi.mock("next-auth/react", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
-  useSearchParams: () => new URLSearchParams(`callbackUrl=${encodeURIComponent(mocks.callbackUrl)}`),
+  useSearchParams: () =>
+    new URLSearchParams(`callbackUrl=${encodeURIComponent(mocks.callbackUrl)}`),
 }));
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -30,6 +31,7 @@ const messages = {
   signIn: "Sign in",
   signingIn: "Signing in...",
   invalidCredentials: "Invalid credentials",
+  quote: "Quote",
 };
 
 describe("LoginForm", () => {

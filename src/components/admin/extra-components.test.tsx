@@ -14,7 +14,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ href, children }: { href: string; children: ReactNode }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 vi.mock("next-auth/react", () => ({
@@ -37,8 +39,22 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
   DropdownMenuContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DropdownMenuLabel: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DropdownMenuSeparator: () => <hr />,
-  DropdownMenuItem: ({ children, onClick, asChild }: { children: ReactNode; onClick?: () => void; asChild?: boolean }) =>
-    asChild ? <div>{children}</div> : <button onClick={onClick} type="button">{children}</button>,
+  DropdownMenuItem: ({
+    children,
+    onClick,
+    asChild,
+  }: {
+    children: ReactNode;
+    onClick?: () => void;
+    asChild?: boolean;
+  }) =>
+    asChild ? (
+      <div>{children}</div>
+    ) : (
+      <button onClick={onClick} type="button">
+        {children}
+      </button>
+    ),
 }));
 
 vi.mock("@/components/ui/avatar", () => ({
@@ -47,13 +63,17 @@ vi.mock("@/components/ui/avatar", () => ({
 }));
 
 vi.mock("@/components/ui/chart", () => ({
-  ChartContainer: ({ children }: { children: ReactNode }) => <div data-testid="chart-container">{children}</div>,
+  ChartContainer: ({ children }: { children: ReactNode }) => (
+    <div data-testid="chart-container">{children}</div>
+  ),
   ChartTooltip: () => <div>chart-tooltip</div>,
   ChartTooltipContent: () => <div>tooltip-content</div>,
 }));
 
 vi.mock("recharts", () => ({
-  AreaChart: ({ children }: { children: ReactNode }) => <div data-testid="area-chart">{children}</div>,
+  AreaChart: ({ children }: { children: ReactNode }) => (
+    <div data-testid="area-chart">{children}</div>
+  ),
   CartesianGrid: () => <div>grid</div>,
   XAxis: () => <div>x-axis</div>,
   Area: () => <div>area</div>,
@@ -100,7 +120,15 @@ describe("admin extra components", () => {
       ok: true,
       json: async () => ({
         unreadCount: 2,
-        notifications: [{ id: "n1", title: "Alert", description: "desc", level: "warning", createdAt: "2026-03-05" }],
+        notifications: [
+          {
+            id: "n1",
+            title: "Alert",
+            description: "desc",
+            level: "warning",
+            createdAt: "2026-03-05",
+          },
+        ],
         hasMore: false,
         nextCursor: null,
       }),
@@ -211,11 +239,10 @@ describe("admin extra components", () => {
             restarts: "Restarts",
           },
           alertsTable: {
-            name: "Name",
+            alert: "Alert",
             severity: "Severity",
             instance: "Instance",
-            startsAt: "Starts",
-            summary: "Summary",
+            value: "Value",
           },
         }}
       />,

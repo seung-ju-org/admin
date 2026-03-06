@@ -11,6 +11,19 @@ describe("buildNotifications", () => {
     const result = buildNotifications({
       enabled: false,
       generatedAt: "2026-03-05T00:00:00.000Z",
+      grafanaUrl: null,
+      overallStatus: "unknown",
+      alertCount: 0,
+      metrics: {
+        availability: null,
+        errorRate: null,
+        p95Latency: null,
+        p99Latency: null,
+        cpuUsage: null,
+        memoryUsage: null,
+        queueBacklog: null,
+        restarts30m: null,
+      },
       alerts: [],
     });
 
@@ -26,17 +39,25 @@ describe("buildNotifications", () => {
       name: `alert-${index}`,
       instance: `instance-${index}`,
       severity: index % 2 === 0 ? "critical" : "warning",
-      state: "firing",
-      startsAt: "2026-03-05T00:00:00.000Z",
-      summary: null,
-      description: null,
-      labels: {},
-      annotations: {},
+      value: index + 1,
     }));
 
     const result = buildNotifications({
       enabled: true,
       generatedAt: "2026-03-05T00:00:00.000Z",
+      grafanaUrl: null,
+      overallStatus: "healthy",
+      alertCount: alerts.length,
+      metrics: {
+        availability: 99.9,
+        errorRate: 0.1,
+        p95Latency: 0.1,
+        p99Latency: 0.2,
+        cpuUsage: 30,
+        memoryUsage: 40,
+        queueBacklog: 0,
+        restarts30m: 0,
+      },
       alerts,
     });
 

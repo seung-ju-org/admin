@@ -49,8 +49,11 @@ describe("auth options", () => {
     });
     mocks.compare.mockResolvedValueOnce(true);
 
-    const provider = authOptions.providers?.[0] as {
-      authorize: (credentials: { username: string; password: string }, req: { headers: Record<string, string> }) => Promise<unknown>;
+    const provider = authOptions.providers?.[0] as unknown as {
+      authorize: (
+        credentials: { username: string; password: string },
+        req: { headers: Record<string, string> },
+      ) => Promise<unknown> | unknown;
     };
 
     const result = (await provider.authorize(
@@ -60,10 +63,7 @@ describe("auth options", () => {
 
     expect(mocks.prisma.user.findFirst).toHaveBeenCalledWith({
       where: {
-        OR: [
-          { username: "admin" },
-          { email: { equals: "admin", mode: "insensitive" } },
-        ],
+        OR: [{ username: "admin" }, { email: { equals: "admin", mode: "insensitive" } }],
       },
     });
     expect(result).toMatchObject({
@@ -83,11 +83,14 @@ describe("auth options", () => {
       passwordHash: "hashed",
     });
 
-    const provider = authOptions.providers?.[0] as {
-      authorize: (credentials: { username: string; password: string }) => Promise<unknown>;
+    const provider = authOptions.providers?.[0] as unknown as {
+      authorize: (
+        credentials: { username: string; password: string },
+        req: { headers?: Record<string, string> },
+      ) => Promise<unknown> | unknown;
     };
 
-    const result = await provider.authorize({ username: "user", password: "pw" });
+    const result = await provider.authorize({ username: "user", password: "pw" }, {});
 
     expect(result).toBeNull();
     expect(mocks.compare).not.toHaveBeenCalled();
