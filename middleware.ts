@@ -18,7 +18,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (request.nextUrl.pathname.startsWith("/api")) {
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // Skip direct static file requests from /public (e.g. /logo.png)
+  if (pathname.includes(".")) {
     return NextResponse.next();
   }
 
