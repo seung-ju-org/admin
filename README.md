@@ -117,6 +117,7 @@ docker run --rm -p 3001:3001 --env-file .env admin:local
 
 - `helm/admin/values.yaml`의 `image.repository`, `image.tag` 확인
 - `secretEnv` 또는 `existingSecret` 설정
+- Sentry 사용 시 `secretEnv.SENTRY_DSN`, `secretEnv.NEXT_PUBLIC_SENTRY_DSN` 설정
 
 ArgoCD는 `helm/admin` 경로를 Application으로 등록하여 Sync하도록 구성합니다.
 
