@@ -123,11 +123,11 @@ extraEnvFrom: []
 probes:
   liveness:
     enabled: true
-    path: /
+    path: /api/health
     initialDelaySeconds: 20
     periodSeconds: 10
   readiness:
     enabled: true
-    path: /
+    path: /api/health
     initialDelaySeconds: 10
     periodSeconds: 10
