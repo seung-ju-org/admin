@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/seung-ju-org/admin
-  tag: 16-034051e3
+  tag: 27-5e3deb86
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
