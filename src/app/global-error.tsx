@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 
 import { Button } from "@/components/ui/button";
+import { getLocale, getMessages } from "@/lib/i18n";
 
 export default function GlobalError({
   error,
@@ -13,24 +14,30 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const locale = useSyncExternalStore(
+    () => () => undefined,
+    () => getLocale(document.documentElement.lang),
+    () => "ko",
+  );
+
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
 
+  const messages = useMemo(() => getMessages(locale).errorPages, [locale]);
+
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className="antialiased">
         <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-2xl font-semibold">문제가 발생했습니다</h1>
-          <p className="text-sm text-muted-foreground">
-            요청 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.
-          </p>
+          <h1 className="text-2xl font-semibold">{messages.globalError.title}</h1>
+          <p className="text-sm text-muted-foreground">{messages.globalError.description}</p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button onClick={reset} type="button">
-              다시 시도
+              {messages.globalError.retry}
             </Button>
             <Button asChild type="button" variant="outline">
-              <Link href="/login">로그인으로 이동</Link>
+              <Link href="/login">{messages.globalError.moveToLogin}</Link>
             </Button>
           </div>
         </main>
