@@ -24,6 +24,36 @@ export type Messages = {
     noNotifications: string;
     viewMonitoring: string;
   };
+  errorPages: {
+    rootNotFound: {
+      title: string;
+      description: string;
+      moveToLogin: string;
+    };
+    rootError: {
+      title: string;
+      description: string;
+      retry: string;
+      moveToLogin: string;
+    };
+    globalError: {
+      title: string;
+      description: string;
+      retry: string;
+      moveToLogin: string;
+    };
+    adminNotFound: {
+      title: string;
+      description: string;
+      moveToDashboard: string;
+    };
+    adminError: {
+      title: string;
+      description: string;
+      retry: string;
+      moveToDashboard: string;
+    };
+  };
   login: {
     title: string;
     description: string;
@@ -308,6 +338,38 @@ const messages: Record<Locale, Messages> = {
       noNotifications: "No notifications.",
       viewMonitoring: "Open monitoring",
     },
+    errorPages: {
+      rootNotFound: {
+        title: "Page not found",
+        description: "Check the URL again or move to the login page.",
+        moveToLogin: "Go to login",
+      },
+      rootError: {
+        title: "An error occurred",
+        description:
+          "Something went wrong while processing your request. Please try again shortly.",
+        retry: "Try again",
+        moveToLogin: "Go to login",
+      },
+      globalError: {
+        title: "Something went wrong",
+        description:
+          "Something went wrong while processing your request. Please try again shortly.",
+        retry: "Try again",
+        moveToLogin: "Go to login",
+      },
+      adminNotFound: {
+        title: "Admin page not found",
+        description: "The requested admin path does not exist.",
+        moveToDashboard: "Go to dashboard",
+      },
+      adminError: {
+        title: "Admin page error",
+        description: "A problem occurred while processing your request. Please try again.",
+        retry: "Try again",
+        moveToDashboard: "Go to dashboard",
+      },
+    },
     login: {
       title: "Sign in",
       description: "Enter your credentials to access the admin console.",
@@ -356,8 +418,7 @@ const messages: Record<Locale, Messages> = {
       grafana: "Open Grafana",
       lastUpdated: "Last updated",
       unavailable: "Monitoring is not configured.",
-      unavailableDescription:
-        "Set PROMETHEUS_BASE_URL to enable metrics collection in admin.",
+      unavailableDescription: "Set PROMETHEUS_BASE_URL to enable metrics collection in admin.",
       overallStatus: "Overall status",
       activeAlerts: "Active alerts",
       alertsDescription: "Alerts currently firing from Prometheus.",
@@ -512,9 +573,9 @@ const messages: Record<Locale, Messages> = {
       titlePlaceholder: "Enter a title",
       companyPlaceholder: "Enter a company",
       rolePlaceholder: "Enter a role",
-      achievementsPlaceholder: "[\"Achievement 1\", \"Achievement 2\"]",
+      achievementsPlaceholder: '["Achievement 1", "Achievement 2"]',
       technologiesPlaceholder: "React, Next.js, PostgreSQL",
-      linksPlaceholder: "{\"github\":\"https://github.com/...\"}",
+      linksPlaceholder: '{"github":"https://github.com/..."}',
       displayOrderPlaceholder: "0",
       startDatePlaceholder: "2025-01-01",
       endDatePlaceholder: "2025-12-31",
@@ -591,6 +652,36 @@ const messages: Record<Locale, Messages> = {
       noNotifications: "표시할 알림이 없습니다.",
       viewMonitoring: "모니터링 열기",
     },
+    errorPages: {
+      rootNotFound: {
+        title: "페이지를 찾을 수 없습니다",
+        description: "주소를 다시 확인하거나 로그인 페이지로 이동해주세요.",
+        moveToLogin: "로그인으로 이동",
+      },
+      rootError: {
+        title: "오류가 발생했습니다",
+        description: "요청을 처리하는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        retry: "다시 시도",
+        moveToLogin: "로그인으로 이동",
+      },
+      globalError: {
+        title: "문제가 발생했습니다",
+        description: "요청 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        retry: "다시 시도",
+        moveToLogin: "로그인으로 이동",
+      },
+      adminNotFound: {
+        title: "관리자 페이지를 찾을 수 없습니다",
+        description: "요청한 관리자 경로가 존재하지 않습니다.",
+        moveToDashboard: "대시보드로 이동",
+      },
+      adminError: {
+        title: "관리자 페이지 오류",
+        description: "요청 처리 중 문제가 발생했습니다. 다시 시도해주세요.",
+        retry: "다시 시도",
+        moveToDashboard: "대시보드로 이동",
+      },
+    },
     login: {
       title: "로그인",
       description: "관리자 콘솔에 접속하려면 계정 정보를 입력하세요.",
@@ -639,8 +730,7 @@ const messages: Record<Locale, Messages> = {
       grafana: "Grafana 열기",
       lastUpdated: "마지막 갱신",
       unavailable: "모니터링 구성이 필요합니다.",
-      unavailableDescription:
-        "관리자에서 메트릭을 수집하려면 PROMETHEUS_BASE_URL을 설정하세요.",
+      unavailableDescription: "관리자에서 메트릭을 수집하려면 PROMETHEUS_BASE_URL을 설정하세요.",
       overallStatus: "전체 상태",
       activeAlerts: "활성 알림",
       alertsDescription: "현재 Prometheus에서 발생 중인 알림입니다.",
@@ -795,9 +885,9 @@ const messages: Record<Locale, Messages> = {
       titlePlaceholder: "제목을 입력하세요",
       companyPlaceholder: "회사를 입력하세요",
       rolePlaceholder: "역할을 입력하세요",
-      achievementsPlaceholder: "[\"성과 1\", \"성과 2\"]",
+      achievementsPlaceholder: '["성과 1", "성과 2"]',
       technologiesPlaceholder: "React, Next.js, PostgreSQL",
-      linksPlaceholder: "{\"github\":\"https://github.com/...\"}",
+      linksPlaceholder: '{"github":"https://github.com/..."}',
       displayOrderPlaceholder: "0",
       startDatePlaceholder: "2025-01-01",
       endDatePlaceholder: "2025-12-31",
@@ -873,6 +963,36 @@ const messages: Record<Locale, Messages> = {
       notifications: "通知",
       noNotifications: "通知はありません。",
       viewMonitoring: "監視を開く",
+    },
+    errorPages: {
+      rootNotFound: {
+        title: "ページが見つかりません",
+        description: "URL を確認するか、ログインページへ移動してください。",
+        moveToLogin: "ログインへ移動",
+      },
+      rootError: {
+        title: "エラーが発生しました",
+        description: "リクエスト処理中に問題が発生しました。しばらくしてから再試行してください。",
+        retry: "再試行",
+        moveToLogin: "ログインへ移動",
+      },
+      globalError: {
+        title: "問題が発生しました",
+        description: "リクエスト処理中に問題が発生しました。しばらくしてから再試行してください。",
+        retry: "再試行",
+        moveToLogin: "ログインへ移動",
+      },
+      adminNotFound: {
+        title: "管理ページが見つかりません",
+        description: "指定した管理パスは存在しません。",
+        moveToDashboard: "ダッシュボードへ移動",
+      },
+      adminError: {
+        title: "管理ページエラー",
+        description: "リクエスト処理中に問題が発生しました。再試行してください。",
+        retry: "再試行",
+        moveToDashboard: "ダッシュボードへ移動",
+      },
     },
     login: {
       title: "ログイン",
@@ -1078,9 +1198,9 @@ const messages: Record<Locale, Messages> = {
       titlePlaceholder: "タイトルを入力してください",
       companyPlaceholder: "会社名を入力してください",
       rolePlaceholder: "役割を入力してください",
-      achievementsPlaceholder: "[\"実績1\", \"実績2\"]",
+      achievementsPlaceholder: '["実績1", "実績2"]',
       technologiesPlaceholder: "React, Next.js, PostgreSQL",
-      linksPlaceholder: "{\"github\":\"https://github.com/...\"}",
+      linksPlaceholder: '{"github":"https://github.com/..."}',
       displayOrderPlaceholder: "0",
       startDatePlaceholder: "2025-01-01",
       endDatePlaceholder: "2025-12-31",
@@ -1144,9 +1264,7 @@ export function getLocale(value?: string | null): Locale {
     return DEFAULT_LOCALE;
   }
 
-  return SUPPORTED_LOCALES.includes(value as Locale)
-    ? (value as Locale)
-    : DEFAULT_LOCALE;
+  return SUPPORTED_LOCALES.includes(value as Locale) ? (value as Locale) : DEFAULT_LOCALE;
 }
 
 export function getMessages(locale: Locale) {
