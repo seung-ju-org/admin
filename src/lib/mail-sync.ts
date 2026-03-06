@@ -23,11 +23,6 @@ const MAIL_SYNC_SSH_TIMEOUT_MS = Number(process.env.MAIL_SYNC_SSH_TIMEOUT_MS ?? 
 const MAIL_SYNC_REQUIRED = process.env.MAIL_SYNC_REQUIRED === "true";
 const MAIL_SYNC_EMAIL_DOMAIN = process.env.MAIL_SYNC_EMAIL_DOMAIN ?? "seung-ju.com";
 
-const MAIL_SYNC_SSH_COMMAND = process.env.MAIL_SYNC_SSH_COMMAND;
-const MAIL_SYNC_SSH_COMMAND_CREATE = process.env.MAIL_SYNC_SSH_COMMAND_CREATE;
-const MAIL_SYNC_SSH_COMMAND_UPDATE = process.env.MAIL_SYNC_SSH_COMMAND_UPDATE;
-const MAIL_SYNC_SSH_COMMAND_DELETE = process.env.MAIL_SYNC_SSH_COMMAND_DELETE;
-
 export function isMailSyncRequired() {
   return MAIL_SYNC_REQUIRED;
 }
@@ -44,23 +39,15 @@ function getMailbox(user: MailSyncPayload["user"]) {
 }
 
 function buildCommand(payload: MailSyncPayload): string | null {
-  const templateByAction: Record<MailSyncAction, string | undefined> = {
-    CREATE: MAIL_SYNC_SSH_COMMAND_CREATE,
-    UPDATE: MAIL_SYNC_SSH_COMMAND_UPDATE,
-    DELETE: MAIL_SYNC_SSH_COMMAND_DELETE,
-  };
-
-  const defaultTemplateByAction: Record<MailSyncAction, string> = {
+  const templateByAction: Record<MailSyncAction, string> = {
     CREATE:
       "kubectl -n mail exec deploy/mail-docker-mailserver -- setup email add {{mailbox}} {{password}}",
     UPDATE:
       "kubectl -n mail exec deploy/mail-docker-mailserver -- setup email update {{mailbox}} {{password}}",
-    DELETE:
-      "kubectl -n mail exec deploy/mail-docker-mailserver -- setup email del {{mailbox}}",
+    DELETE: "kubectl -n mail exec deploy/mail-docker-mailserver -- setup email del {{mailbox}}",
   };
 
-  const template =
-    templateByAction[payload.action] ?? MAIL_SYNC_SSH_COMMAND ?? defaultTemplateByAction[payload.action];
+  const template = templateByAction[payload.action];
 
   const password = payload.user.password?.trim() ?? "";
   if (payload.action === "UPDATE" && !password) {
