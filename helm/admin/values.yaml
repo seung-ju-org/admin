@@ -56,10 +56,24 @@ resources:
     memory: 512Mi
 
 autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
 
 nodeSelector: {}
 tolerations: []
