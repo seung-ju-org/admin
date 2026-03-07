@@ -64,6 +64,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -88,5 +89,8 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "overrides": {
+    "express-rate-limit": "^8.2.2"
   }
 }
