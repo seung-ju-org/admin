@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
-import * as Sentry from "@sentry/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { getLocale, getMessages, type Locale } from "@/lib/i18n";
@@ -14,18 +13,15 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   const locale = useSyncExternalStore<Locale>(
     () => () => undefined,
     () => getLocale(document.documentElement.lang),
     () => "ko",
   );
 
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
-
   const messages = useMemo(() => getMessages(locale).errorPages, [locale]);
-
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className="antialiased">

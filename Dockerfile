@@ -26,8 +26,6 @@ WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
-ARG SENTRY_AUTH_TOKEN
-
 ENV NODE_ENV=production
 
 RUN if [ -f pnpm-lock.yaml ]; then \

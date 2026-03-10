@@ -1,5 +1,4 @@
 import { getServerSession } from "next-auth";
-import * as Sentry from "@sentry/nextjs";
 
 import { authOptions } from "@/lib/auth";
 import { buildNotifications, buildNotificationsFingerprint } from "@/lib/admin-notifications";
@@ -64,10 +63,7 @@ export async function GET() {
         } catch (error) {
           isClosed = true;
           clearTimers();
-
-          if (!isClosedControllerError(error)) {
-            Sentry.captureException(error);
-          }
+          if (!isClosedControllerError(error)) console.error(error);
           return false;
         }
       };
@@ -89,9 +85,7 @@ export async function GET() {
             ),
           );
         } catch (error) {
-          if (!isClosed) {
-            Sentry.captureException(error);
-          }
+          if (!isClosed) console.error(error);
           // Keep stream alive on transient monitoring errors.
         }
       };
